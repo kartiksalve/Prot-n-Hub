@@ -3,37 +3,7 @@ import requests
 import networkx as nx
 import plotly.graph_objects as go
 import base64
-import os
 import io
-
-# -------------- Background Styling --------------
-def set_background(image_path):
-    with open(image_path, "rb") as file:
-        encoded = base64.b64encode(file.read()).decode()
-    css = f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{encoded}");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-    }}
-    .block-container {{
-        background-color: rgba(0, 0, 0, 0.6);
-        padding: 2rem 3rem;
-        border-radius: 1rem;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        color: #f0f0f0;
-        max-width: 1000px;
-        margin: auto;
-    }}
-    </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
-
-set_background("dna_background.png")
 
 # -------------- Constants --------------
 STRING_API_URL = "https://string-db.org/api"
@@ -41,6 +11,7 @@ STRING_OUTPUT_FORMAT = "json"
 STRING_METHOD = "network"
 
 # -------------- Functions --------------
+
 def get_string_interactions(uniprot_id, species=9606, min_score=0.4):
     params = {
         "identifiers": uniprot_id,
@@ -71,8 +42,8 @@ def find_hub_genes(G, top_n=5):
 def create_graph_figure(G, hub_genes):
     pos = nx.spring_layout(G, seed=42)
     degrees = dict(G.degree())
-
     edge_x, edge_y = [], []
+
     for src, dst in G.edges():
         x0, y0 = pos[src]
         x1, y1 = pos[dst]
@@ -94,7 +65,7 @@ def create_graph_figure(G, hub_genes):
         node_y.append(y)
         node_size.append(15 + degree * 2)
         node_color.append('red' if node in hub_genes else 'royalblue')
-        node_text.append(f"{node}<br>Degree: {degree}")
+        node_text.append(f"{node} Degree: {degree}")
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
@@ -121,14 +92,14 @@ def create_graph_figure(G, hub_genes):
     return go.Figure(data=[edge_trace, node_trace], layout=layout)
 
 # -------------- Streamlit UI --------------
+
 st.title("🧬 Prot'n'Hub – Protein Interaction & Hub Gene Explorer")
 
 tabs = st.tabs(["Home", "About"])
+
 with tabs[0]:
     st.header("Explore Protein Network")
-
     user_input = st.text_area("Enter Protein Name or UniProt ID", height=120)
-
     st.subheader("Species Selection")
     species_dict = {
         "Human (Homo sapiens)": 9606,
@@ -143,7 +114,6 @@ with tabs[0]:
         species = st.number_input("Enter NCBI Taxonomy ID", value=9606)
     else:
         species = species_dict[selected_species]
-
     score_threshold = st.slider("Interaction Score Threshold", 0.0, 1.0, 0.4, 0.05)
 
     if st.button("🔍 Analyze"):
@@ -153,11 +123,9 @@ with tabs[0]:
             if not string_data:
                 st.error("❌ No interaction data found.")
                 st.stop()
-
             G = build_network(string_data)
             hub_genes = find_hub_genes(G)
             st.success(f"Top Hub Genes: {', '.join(hub_genes)}")
-
             fig = create_graph_figure(G, hub_genes)
             st.plotly_chart(fig, use_container_width=True)
 
@@ -172,8 +140,8 @@ with tabs[0]:
             )
 
             with st.expander("📊 Network Analysis Results", expanded=True):
-                st.write(f"⭐ **Nodes**: {G.number_of_nodes()} — {list(G.nodes())}")
-                st.write(f"⭐ **Edges**: {G.number_of_edges()} — {list(G.edges())}")
+                st.write(f"⭐ **Nodes**: {G.number_of_nodes()} - {list(G.nodes())}")
+                st.write(f"⭐ **Edges**: {G.number_of_edges()} - {list(G.edges())}")
                 degree_dict = dict(G.degree())
                 st.write("⭐ **Node Degrees:**")
                 for node, degree in degree_dict.items():
@@ -200,64 +168,58 @@ with tabs[1]:
     - NetworkX, Plotly, and Streamlit
 
     ---
+    ### 🧑🏫 Quick Guide
+    Prot'n'Hub is designed to be simple and informative. Here's a quick guide:
 
-    ### 🧑‍🏫 Quick Guide
-
-      Prot'n'Hub is designed to be simple and informative. Here's a quick guide:
-
-    **🔹 Explore Protein Network:**  
+    **🔹 Explore Protein Network:**
     Enter a *protein name* (like "TP53") or a *UniProt ID* (like "P04637"). The app uses this to search for protein-protein interactions from the STRING database.
 
-    **🔹 Species Selection:**  
+    **🔹 Species Selection:**
     Choose the species your protein belongs to. For example:
     - Human = Homo sapiens
-    - Mouse = Mus musculus  
+    - Mouse = Mus musculus
     If your species isn't listed, choose **Custom** and enter its **NCBI Taxonomy ID** (a unique number for each species).
 
-    **🔹 Interaction Score Threshold:**  
-    This sets the minimum confidence score for the interactions.  
-    - Lower values (e.g. 0.2) = more connections, but lower reliability  
-    - Higher values (e.g. 0.7+) = fewer connections, but higher reliability  
+    **🔹 Interaction Score Threshold:**
+    This sets the minimum confidence score for the interactions.
+    - Lower values (e.g. 0.2) = more connections, but lower reliability
+    - Higher values (e.g. 0.7+) = fewer connections, but higher reliability
     Default is **0.4**, which balances both.
 
-    **🔹 Nodes:**  
+    **🔹 Nodes:**
     Each circle in the graph is a *protein*. The number of nodes shows how many proteins are in your interaction network.
 
-    **🔹 Edges:**  
+    **🔹 Edges:**
     Lines connecting the nodes. Each edge represents an interaction between two proteins.
 
-    **🔹 Node Degrees:**  
-    This shows how many connections (edges) each protein (node) has.  
-    Proteins with high degree values are often *hub genes*—key proteins that interact with many others.
+    **🔹 Node Degrees:**
+    This shows how many connections (edges) each protein (node) has.
+    Proteins with high degree values are often *hub genes*-key proteins that interact with many others.
 
-    **🔹 Main Hub Gene:**  
+    **🔹 Main Hub Gene:**
     The protein with the most connections in your network. These are often biologically important and can be potential targets for further research.
 
-    **🔹 Download Graph as PNG:**  
+    **🔹 Download Graph as PNG:**
     Click this button to save the visual interaction network as a PNG image for reports or presentations.
 
     ---
-
     ### 📄 Acknowledgement
-      I would like to express my sincere gratitude to the following resources and individuals who contributed to the development of this application:
+    I would like to express my sincere gratitude to the following resources and individuals who contributed to the development of this application:
 
-    **STRING Database**: For providing comprehensive protein-protein interaction data, which forms the core of this application's functionality.  
-    **UniProt Knowledgebase**: For enabling the mapping of protein sequences to UniProt IDs, a crucial step in processing user-provided sequence input.  
-    **NetworkX**: For the powerful tools used in network analysis and manipulation, allowing for the construction and processing of protein interaction graphs.  
-    **Plotly**: For the creation of interactive and visually appealing network visualizations, enhancing the user experience.  
-    **Streamlit**: For providing a user-friendly framework for building and deploying the web application.  
+    **STRING Database**: For providing comprehensive protein-protein interaction data, which forms the core of this application's functionality.
+    **UniProt Knowledgebase**: For enabling the mapping of protein sequences to UniProt IDs, a crucial step in processing user-provided sequence input.
+    **NetworkX**: For the powerful tools used in network analysis and manipulation, allowing for the construction and processing of protein interaction graphs.
+    **Plotly**: For the creation of interactive and visually appealing network visualizations, enhancing the user experience.
+    **Streamlit**: For providing a user-friendly framework for building and deploying the web application.
 
-    I extend my deepest gratitude to **Dr. Kushagra Kashyap**, for his invaluable guidance, support, and expertise throughout this project. His insights and encouragement were instrumental  in shaping the application and overcoming the challenges encountered during its development.
+    I extend my deepest gratitude to **Dr. Kushagra Kashyap**, for his invaluable guidance, support, and expertise throughout this project. His insights and encouragement were instrumental in shaping the application and overcoming the challenges encountered during its development.
 
     ---
-
     **Developer Information:**
-
     Hi, I'm Kartik Parag Salve, the creator of Prot'n'Hub.
     As someone currently pursuing my Master's in Bioinformatics at Deccan Education Society Pune University,
     I've always been fascinated by the power of protein-protein interaction networks.
     That's why I built Prot'n'Hub which is a Streamlit app that makes exploring these interactions intuitive and engaging.
-
     I'm a big fan of the rich data available through the STRING and UniProt APIs,
     and the amazing visualization capabilities of NetworkX and Plotly.
     Prot'n'Hub lets you:
