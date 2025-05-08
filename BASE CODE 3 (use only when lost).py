@@ -8,36 +8,30 @@ import io
 
 # -------------- Background Styling --------------
 def set_background(image_path):
-    try:
-        with open(image_path, "rb") as file:
-            encoded = base64.b64encode(file.read()).decode()
-        css = f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/png;base64,{encoded}");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-        }}
-        .block-container {{
-            background-color: rgba(0, 0, 0, 0.6);
-            padding: 2rem 3rem;
-            border-radius: 1rem;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            color: #f0f0f0;
-            max-width: 1000px;
-            margin: auto;
-        }}
-        </style>
-        """
-        st.markdown(css, unsafe_allow_html=True)
-    except FileNotFoundError:
-        st.warning(
-            f"Background image '{image_path}' not found. "
-            "The app will continue without a background image."
-        )
+    with open(image_path, "rb") as file:
+        encoded = base64.b64encode(file.read()).decode()
+    css = f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/png;base64,{encoded}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+    }}
+    .block-container {{
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 2rem 3rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: #f0f0f0;
+        max-width: 1000px;
+        margin: auto;
+    }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
 set_background("dna_background.png")
 
@@ -178,8 +172,8 @@ with tabs[0]:
             )
 
             with st.expander("📊 Network Analysis Results", expanded=True):
-                st.write(f"⭐ **Nodes**: {G.number_of_nodes()} - {list(G.nodes())}")
-                st.write(f"⭐ **Edges**: {G.number_of_edges()} - {list(G.edges())}")
+                st.write(f"⭐ **Nodes**: {G.number_of_nodes()} — {list(G.nodes())}")
+                st.write(f"⭐ **Edges**: {G.number_of_edges()} — {list(G.edges())}")
                 degree_dict = dict(G.degree())
                 st.write("⭐ **Node Degrees:**")
                 for node, degree in degree_dict.items():
@@ -234,7 +228,7 @@ with tabs[1]:
 
     **🔹 Node Degrees:**  
     This shows how many connections (edges) each protein (node) has.  
-    Proteins with high degree values are often *hub genes*-key proteins that interact with many others.
+    Proteins with high degree values are often *hub genes*—key proteins that interact with many others.
 
     **🔹 Main Hub Gene:**  
     The protein with the most connections in your network. These are often biologically important and can be potential targets for further research.
@@ -246,11 +240,12 @@ with tabs[1]:
 
     ### 📄 Acknowledgement
       I would like to express my sincere gratitude to the following resources and individuals who contributed to the development of this application:
-      **STRING Database**: For providing comprehensive protein-protein interaction data, which forms the core of this application's functionality.  
-      **UniProt Knowledgebase**: For enabling the mapping of protein sequences to UniProt IDs, a crucial step in processing user-provided sequence input.  
-      **NetworkX**: For the powerful tools used in network analysis and manipulation, allowing for the construction and processing of protein interaction graphs.  
-      **Plotly**: For the creation of interactive and visually appealing network visualizations, enhancing the user experience.  
-      **Streamlit**: For providing a user-friendly framework for building and deploying the web application.  
+
+    **STRING Database**: For providing comprehensive protein-protein interaction data, which forms the core of this application's functionality.  
+    **UniProt Knowledgebase**: For enabling the mapping of protein sequences to UniProt IDs, a crucial step in processing user-provided sequence input.  
+    **NetworkX**: For the powerful tools used in network analysis and manipulation, allowing for the construction and processing of protein interaction graphs.  
+    **Plotly**: For the creation of interactive and visually appealing network visualizations, enhancing the user experience.  
+    **Streamlit**: For providing a user-friendly framework for building and deploying the web application.  
 
     I extend my deepest gratitude to **Dr. Kushagra Kashyap**, for his invaluable guidance, support, and expertise throughout this project. His insights and encouragement were instrumental  in shaping the application and overcoming the challenges encountered during its development.
 
